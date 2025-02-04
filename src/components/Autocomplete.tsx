@@ -36,7 +36,7 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setText(event.target.value);
-    applyQuery(event.target.value); // Використовуємо debounce для встановлення запиту
+    applyQuery(event.target.value);
     setShowDropdown(true);
     onSelected(null);
   };
