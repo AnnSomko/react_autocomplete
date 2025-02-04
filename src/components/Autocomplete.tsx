@@ -13,36 +13,49 @@ interface AutocompleteProps {
 export const Autocomplete: React.FC<AutocompleteProps> = ({
   people,
   onSelected,
+  text,
+  onTextChange,
   delay = 300,
 }) => {
-  const [text, setText] = useState('');
-  const [appliedQuery, setAppliedQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [filteredPeople, setFilteredPeople] = useState<Person[]>(people);
 
-  const applyQuery = useCallback(debounce(setAppliedQuery, delay), [delay]);
+  const applyQuery = useCallback(
+    debounce((query: string) => {
+      if (query.trim() === '') {
+        setFilteredPeople(people);
+      } else {
+        setFilteredPeople(
+          people.filter(person =>
+            person.name.toLowerCase().includes(query.toLowerCase()),
+          ),
+        );
+      }
+    }, delay),
+    [people, delay],
+  );
 
   useEffect(() => {
-    if (!appliedQuery) {
-      setFilteredPeople(people);
-    } else {
-      setFilteredPeople(
-        people.filter(person =>
-          person.name.toLowerCase().includes(appliedQuery.toLowerCase()),
-        ),
-      );
-    }
-  }, [appliedQuery, people]);
+    applyQuery(text);
+  }, [text, applyQuery]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setText(event.target.value);
-    applyQuery(event.target.value);
-    setShowDropdown(true);
+    onTextChange(event);
+
+    if (event.target.value.trim() !== '') {
+      setShowDropdown(true);
+    } else {
+      setShowDropdown(false);
+    }
+
     onSelected(null);
   };
 
   const handleSelect = (person: Person) => {
-    setText(person.name);
+    onTextChange({
+      target: { value: person.name },
+    } as React.ChangeEvent<HTMLInputElement>);
+
     setShowDropdown(false);
     onSelected(person);
   };
